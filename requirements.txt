@@ -1,0 +1,6 @@
+duckdb==1.5.4
+fastapi
+uvicorn[standard]
+jinja2
+pytest
+httpx
