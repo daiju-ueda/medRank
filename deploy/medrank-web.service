@@ -1,0 +1,15 @@
+[Unit]
+Description=MedRank — world medical researcher rankings (FastAPI)
+After=network.target
+ConditionPathExists=/srv/apps/researchers/data/researchers.db
+
+[Service]
+Type=simple
+User=d-ueda
+WorkingDirectory=/srv/apps/researchers
+ExecStart=/srv/apps/researchers/.venv/bin/uvicorn medrank.web.app:app --host 127.0.0.1 --port 8110 --workers 2
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
