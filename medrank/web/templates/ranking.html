@@ -1,31 +1,65 @@
 {% extends "base.html" %}
 {% import "_macros.html" as m %}
-{% block title %}{{ meta['title'] }} — MedRank{% endblock %}
-{% block description %}{{ meta['title'] }}. Ranked from open citation data, recomputed monthly. {{ rows|length }} researchers.{% endblock %}
+{% block title %}{{ meta['title'] }}{% if page > 1 %} — Page {{ page }}{% endif %} — MedRank{% endblock %}
+{% block description %}{{ meta['title'] }}. Ranked from open citation data, recomputed monthly. Top {{ meta['size'] }} researchers.{% endblock %}
+{% block head_extra %}
+{% if page > 1 %}<link rel="prev" href="{{ path }}{% if page > 2 %}?page={{ page - 1 }}{% endif %}">{% endif %}
+{% if page < pages %}<link rel="next" href="{{ path }}?page={{ page + 1 }}">{% endif %}
+{% endblock %}
 
 {% block content %}
-<div class="wrap crumbs"><a href="/rankings">Rankings</a> / {{ meta['metric'] }}{% if meta['field'] %} / {{ meta['field'] }}{% endif %}{% if meta['country'] %} / {{ meta['country'] }}{% endif %}</div>
-<section class="hero" style="padding:44px 0 30px">
+<div class="wrap crumbs"><a href="/rankings">Rankings</a> /
+  {{ m.metric_label(meta['metric']) }}
+  {% if meta['field'] %}/ {{ field_names.get(meta['field'], meta['field']) }}{% endif %}
+  {% if meta['country'] %}/ {{ meta['country'] }}{% endif %}</div>
+<section class="hero" style="padding:44px 0 26px">
   <div class="wrap">
     <div class="eyebrow">
       {% if meta['category'] == 'classic' %}Ranking
       {% elif meta['category'] == 'trend' %}Momentum
       {% else %}Reading{% endif %}
-      · {{ rows|length }} researchers
+      · Top {{ meta['size'] }} · updated monthly
     </div>
     <h1 style="font-size:clamp(30px,5vw,50px)">{{ meta['title'] }}</h1>
+
+    {% if meta['category'] == 'classic' %}
+    <div class="pill-row">
+      <a class="pill {{ 'on' if not meta['field'] and not meta['country'] else '' }}"
+         href="/rankings/{{ metric_urls.get(meta['metric'], meta['metric']) }}">World</a>
+      {% for f in fields %}
+      <a class="pill {{ 'on' if meta['field'] == f else '' }}"
+         href="/rankings/{{ metric_urls.get(meta['metric'], meta['metric']) }}/{{ f }}">{{ field_short.get(f, f) }}</a>
+      {% endfor %}
+    </div>
+    <div class="pill-row">
+      {% for c in top_countries %}
+      <a class="pill {{ 'on' if meta['country'] == c['code'] else '' }}"
+         href="/rankings/{{ metric_urls.get(meta['metric'], meta['metric']) }}/all/{{ c['code'] }}">{{ c['name'] }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
   </div>
 </section>
 
-<section class="section" style="padding-top:26px">
+<section class="section" style="padding-top:24px">
   <div class="wrap">
     {% if rows %}
     <div class="board">
       {% for r in rows %}{{ m.row(r, r['value'], meta['metric'], r['rank']) }}{% endfor %}
     </div>
+    {% if pages > 1 %}
+    <nav class="pager" aria-label="Ranking pages">
+      {% for p in range(1, pages + 1) %}
+      {% if p == page %}<span class="pg on">{{ p }}</span>
+      {% else %}<a class="pg" href="{{ path }}{% if p > 1 %}?page={{ p }}{% endif %}">{{ p }}</a>{% endif %}
+      {% endfor %}
+    </nav>
+    {% endif %}
     {% else %}
     <p class="empty">No researchers in this ranking yet.</p>
     {% endif %}
+    <p class="crumbs" style="padding:26px 0 8px">
+      How this is computed → <a href="/methodology">methodology</a></p>
   </div>
 </section>
 {% endblock %}

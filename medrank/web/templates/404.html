@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Page not found — MedRank{% endblock %}
+{% block content %}
+<section class="hero" style="padding:80px 0 60px">
+  <div class="wrap">
+    <div class="eyebrow">404 · No pulse detected</div>
+    <h1 style="font-size:clamp(30px,5vw,52px)">This page isn't in the map.</h1>
+    <p class="lede">The researcher, ranking or page you're after may have moved with the last
+      monthly rebuild — or the address has a typo. Try a search instead.</p>
+    <div class="hero-cta">
+      <a class="btn" href="/rankings">Browse all rankings</a>
+      <a class="btn ghost" href="/">Back to the front page</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

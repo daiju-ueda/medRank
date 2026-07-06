@@ -5,14 +5,14 @@
 {% block content %}
 <div class="wrap crumbs"><a href="/institutions">Institutions</a> / {{ inst['name'] }}</div>
 <section class="prof-head"><div class="wrap">
-  <div class="eyebrow">Institution{% if inst['country_code'] %} · {{ inst['country_code'] }}{% endif %}</div>
+  <div class="eyebrow">Institution{% if inst['country_code'] %} · <a href="/countries/{{ inst['country_code'] }}" style="color:inherit">{{ inst['country_code'] }}</a>{% endif %}</div>
   <h1>{{ inst['name'] }}</h1>
 </div></section>
 <section class="wrap">
   <div class="stat-strip">
     <div class="stat"><b>{{ '{:,}'.format(inst['researcher_count']) }}</b><span>researchers</span></div>
     <div class="stat"><b>{{ m.fmt(inst['total_citations']) }}</b><span>total citations</span></div>
-    {% if inst['top_field'] %}<div class="stat"><b style="font-size:18px;font-family:var(--ff-display)">{{ inst['top_field'].replace('-',' ')|title }}</b><span>strongest field</span></div>{% endif %}
+    {% if inst['top_field'] %}<div class="stat"><b style="font-size:18px;font-family:var(--ff-display)">{{ field_short.get(inst['top_field'], inst['top_field']) }}</b><span>strongest field</span></div>{% endif %}
   </div>
   <div class="section-head" style="margin-top:14px"><h2 style="font-size:24px">Top researchers here</h2>
     <span class="k">By h-index</span></div>

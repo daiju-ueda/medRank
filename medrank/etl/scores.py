@@ -4,7 +4,7 @@ import sqlite3
 import statistics
 from pathlib import Path
 
-from medrank.config import CURRENT_YEAR
+from medrank.config import CURRENT_YEAR, RISING_MIN_RECENT
 
 
 def _cites(counts):
@@ -35,8 +35,10 @@ def rising_score(counts, now_year: int = CURRENT_YEAR) -> float:
         return 0.0
     c = _cites(counts)
     recent = sum(c.get(y, 0) for y in range(now_year - 2, now_year + 1))
+    if recent < RISING_MIN_RECENT:
+        # 母数が小さい「新規参入」は伸び率が無限大に見えるだけでノイズ。対象外。
+        return 0.0
     prior = sum(c.get(y, 0) for y in range(now_year - 5, now_year - 2))
-    # 直近3年 対 その前3年 の伸び。母数の小ささを log で緩和。
     growth = (recent + 1) / (prior + 1)
     return round(growth * math.log10(recent + 10), 4)
 
@@ -57,19 +59,30 @@ def consistency_score(counts, now_year: int = CURRENT_YEAR) -> float:
     return round(coverage / (1 + cv), 4)
 
 
-def update_scores(db_path: Path, now_year: int = CURRENT_YEAR) -> int:
+def update_scores(db_path: Path, now_year: int = CURRENT_YEAR, batch: int = 50_000) -> int:
+    """rowid キーセットページングで一定メモリのまま全行を更新する(数百万行対応)。"""
     db = sqlite3.connect(db_path)
-    rows = db.execute("SELECT id, counts_by_year FROM researchers").fetchall()
-    updates = []
-    for rid, cby in rows:
-        counts = json.loads(cby) if cby else []
-        updates.append((rising_score(counts, now_year), consistency_score(counts, now_year),
-                        career_start(counts), rid))
-    db.executemany(
-        "UPDATE researchers SET rising_score=?, consistency_score=?, "
-        "first_pub_year=coalesce(?, first_pub_year) WHERE id=?",
-        updates,
-    )
-    db.commit()
+    total = 0
+    last_rowid = 0
+    while True:
+        rows = db.execute(
+            "SELECT rowid, id, counts_by_year FROM researchers "
+            "WHERE rowid > ? ORDER BY rowid LIMIT ?", (last_rowid, batch),
+        ).fetchall()
+        if not rows:
+            break
+        last_rowid = rows[-1][0]
+        updates = []
+        for _, rid, cby in rows:
+            counts = json.loads(cby) if cby else []
+            updates.append((rising_score(counts, now_year), consistency_score(counts, now_year),
+                            career_start(counts), rid))
+        db.executemany(
+            "UPDATE researchers SET rising_score=?, consistency_score=?, "
+            "first_pub_year=coalesce(?, first_pub_year) WHERE id=?",
+            updates,
+        )
+        db.commit()
+        total += len(updates)
     db.close()
-    return len(updates)
+    return total

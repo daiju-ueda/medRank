@@ -28,3 +28,13 @@ def test_career_start_skips_misattributed_tail():
 
 def test_career_start_none_for_empty():
     assert scores.career_start([]) is None
+
+
+def test_rising_requires_recent_volume():
+    # 直近3年で急伸していても絶対量が小さければ 0(新規参入ノイズ除去)
+    tiny = [{"year": y, "cited_by_count": c}
+            for y, c in zip(range(2020, 2027), [0, 0, 0, 1, 5, 20, 50])]
+    assert scores.rising_score(tiny) == 0.0
+    big = [{"year": y, "cited_by_count": c}
+           for y, c in zip(range(2020, 2027), [50, 60, 80, 100, 300, 500, 800])]
+    assert scores.rising_score(big) > 0

@@ -10,7 +10,10 @@
 <meta property="og:site_name" content="MedRank">
 <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
 <meta property="og:description" content="{{ self.description() }}">
+{% if og_image %}<meta property="og:image" content="{{ og_image }}">
 <meta name="twitter:card" content="summary_large_image">
+{% else %}<meta name="twitter:card" content="summary">
+{% endif %}
 <link rel="preload" as="style" href="/static/style.css">
 <link rel="stylesheet" href="/static/style.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>❤️</text></svg>">

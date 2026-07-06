@@ -10,6 +10,8 @@ PORT = 8110
 MIN_WORKS = 5
 MIN_H = 2
 CURRENT_YEAR = 2026          # ランキング・年次クリーニングの基準年(月次 ETL で更新)
+RISING_MIN_RECENT = 200      # Rising Stars: 直近3年の被引用がこれ未満なら対象外(新規参入ノイズ除去)
+RANKING_SIZE = 500           # 各ランキングの収録人数(表示は100件ずつページング)
 
 HEALTH_DOMAIN = "domains/4"
 BIOMED_DOMAIN = "domains/1"
@@ -26,6 +28,23 @@ MEDICAL_FIELDS = {
     "fields/24": ("immunology-microbiology", "Immunology & Microbiology"),
     "fields/28": ("neuroscience", "Neuroscience"),
     "fields/32": ("psychology", "Psychology"),
+}
+
+
+# slug -> 正式表示名(UI・タイトル・パンくずで生 slug を出さない)
+FIELD_NAMES = {slug: name for slug, name in MEDICAL_FIELDS.values()}
+
+# slug -> 短縮表示名(ランキング行など幅の狭い場所用)
+FIELD_SHORT = {
+    "medicine": "Medicine",
+    "nursing": "Nursing",
+    "pharmacology": "Pharmacology",
+    "dentistry": "Dentistry",
+    "health-professions": "Health Professions",
+    "biochem-genetics": "Biochemistry & Genetics",
+    "immunology-microbiology": "Immunology & Microbiology",
+    "neuroscience": "Neuroscience",
+    "psychology": "Psychology",
 }
 
 

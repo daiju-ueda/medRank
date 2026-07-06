@@ -160,11 +160,14 @@ a:hover { text-decoration: underline; text-underline-offset: 2px; }
   letter-spacing: .08em; text-transform: uppercase; color: var(--slate); }
 .row .spark-wrap { justify-self: end; }
 
-/* the signature: citation pulse */
+/* the signature: citation pulse — crimson while climbing, slate once fading */
 svg.spark { display: block; }
 .spark-line { fill: none; stroke: var(--crimson); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
 .spark-area { fill: color-mix(in srgb, var(--teal) 16%, transparent); stroke: none; }
 .spark-dot  { fill: var(--crimson); }
+.spark-down .spark-line { stroke: var(--slate); }
+.spark-down .spark-dot  { fill: var(--slate); }
+.spark-down .spark-area { fill: color-mix(in srgb, var(--slate) 12%, transparent); }
 
 /* ---------- catalog grid ---------- */
 .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
@@ -238,6 +241,20 @@ svg.worldmap { width: 100%; height: auto; display: block; }
 .pill { font-size: 13px; padding: 6px 13px; border: 1px solid var(--line); border-radius: 30px; color: var(--ink-soft); background: var(--surface); }
 .pill:hover, .pill.on { border-color: var(--teal); color: var(--teal-bright); text-decoration: none; }
 .empty { color: var(--slate); padding: 40px 0; text-align: center; }
+
+/* pager */
+.pager { display: flex; gap: 6px; justify-content: center; padding: 26px 0 4px; flex-wrap: wrap; }
+.pg { font-family: var(--ff-mono); font-size: 14px; min-width: 36px; text-align: center;
+  padding: 7px 10px; border: 1px solid var(--line); border-radius: var(--r); color: var(--ink-soft); }
+.pg:hover { border-color: var(--teal); text-decoration: none; }
+.pg.on { background: var(--teal); border-color: var(--teal); color: #fff; }
+
+/* collapsible country list on the catalog */
+.country-fold { margin-top: 16px; }
+.country-fold summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--teal-bright);
+  list-style: none; }
+.country-fold summary::before { content: "▸ "; }
+.country-fold[open] summary::before { content: "▾ "; }
 .crumbs { font-size: 13px; color: var(--slate); padding: 18px 0 0; }
 .crumbs a { color: var(--slate); }
 

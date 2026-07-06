@@ -2,27 +2,19 @@
 {% block title %}All Rankings — MedRank{% endblock %}
 {% block description %}Every MedRank leaderboard: by h-index, citations and output; by field and country; rising stars and the most consistent researchers.{% endblock %}
 
-{% macro metric_url(k) -%}{{ k.split('__')[0].replace('_','-') }}{%- endmacro %}
-{% macro card(row) %}
-{% set k = row['ranking_key'] %}
-{% set base = k.split('__')[0].replace('_','-') %}
-{% if '__field=' in k %}{% set href = '/rankings/' ~ base ~ '/' ~ k.split('=')[1] %}
-{% elif '__country=' in k %}{% set href = '/rankings/' ~ base ~ '/all/' ~ k.split('=')[1] %}
-{% else %}{% set href = '/rankings/' ~ (base if base != 'rising' else 'rising-stars') %}{% endif %}
-<a class="cat-card" href="{{ href }}">
-  <div class="ct-k">{% if row['field'] %}{{ row['field'].replace('-',' ')|title }}{% elif row['country'] %}{{ row['country'] }}{% else %}World{% endif %}</div>
-  <h3>{{ row['title'] }}</h3>
-  <p>Top {{ row['size'] }} · updated monthly</p>
-</a>
-{% endmacro %}
+{% macro flag(code) -%}
+{%- if code and code|length == 2 -%}
+{{- (0x1F1E6 + (code[0]|upper|ord - 65))|chr }}{{ (0x1F1E6 + (code[1]|upper|ord - 65))|chr -}}
+{%- endif -%}
+{%- endmacro %}
 
 {% block content %}
 <section class="hero" style="padding:52px 0 30px">
   <div class="wrap">
     <div class="eyebrow">The catalog</div>
     <h1 style="font-size:clamp(30px,5vw,52px)">Every way to read the field</h1>
-    <p class="lede">Classic leaderboards by impact, momentum rankings that track who is climbing fastest,
-      and slower readings that reward a steady hand over a single spike.</p>
+    <p class="lede">Classic leaderboards by impact, momentum rankings that track who is climbing
+      fastest, and slower readings that reward a steady hand over a single spike.</p>
   </div>
 </section>
 
@@ -31,17 +23,39 @@
     <div class="cat-group">
       <div class="section-head"><h2>Momentum &amp; readings</h2><span class="k">Trend · Story</span></div>
       <div class="cat-grid">
-        {% for row in groups['trend'] %}{{ card(row) }}{% endfor %}
-        {% for row in groups['story'] %}{{ card(row) }}{% endfor %}
+        {% for row in trends %}
+        <a class="cat-card" href="{{ ranking_url(row['ranking_key']) }}">
+          <div class="ct-k">World</div>
+          <h3>{{ row['title'] }}</h3>
+          <p>Top {{ row['size'] }} · updated monthly</p>
+        </a>
+        {% endfor %}
       </div>
     </div>
 
+    {% for mkey, mlabel in metrics %}
     <div class="cat-group">
-      <div class="section-head"><h2>Classic leaderboards</h2><span class="k">By field &amp; country</span></div>
-      <div class="cat-grid">
-        {% for row in groups['classic'] %}{{ card(row) }}{% endfor %}
+      <div class="section-head"><h2>By {{ mlabel|lower }}</h2>
+        <a class="more" href="/rankings/{{ metric_urls.get(mkey, mkey) }}">World top 500 →</a></div>
+
+      <div class="pill-row" style="margin-top:0">
+        {% for f in fields_by_metric.get(mkey, []) %}
+        <a class="pill" href="/rankings/{{ metric_urls.get(mkey, mkey) }}/{{ f }}">{{ field_short.get(f, f) }}</a>
+        {% endfor %}
       </div>
+
+      <details class="country-fold">
+        <summary>{{ countries_by_metric.get(mkey, [])|length }} country rankings</summary>
+        <div class="chip-grid" style="margin-top:14px">
+          {% for c in countries_by_metric.get(mkey, []) %}
+          <a class="chip" href="/rankings/{{ metric_urls.get(mkey, mkey) }}/all/{{ c }}">
+            <span class="cn">{{ flag(c) }} {{ cnames.get(c, c) }}</span>
+          </a>
+          {% endfor %}
+        </div>
+      </details>
     </div>
+    {% endfor %}
   </div>
 </section>
 {% endblock %}

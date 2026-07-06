@@ -32,7 +32,7 @@
         </div>
       </div>
       <div class="hero-pulse-holder">
-        {{ lead['counts_by_year'] | sparkline(880, 96) | safe | replace('class="spark"', 'class="spark hero-pulse"') }}
+        {{ lead['counts_by_year'] | sparkline(880, 96) | safe | replace('class="spark', 'class="spark hero-pulse') }}
       </div>
     </div>
     {% endif %}
@@ -44,7 +44,7 @@
     <div class="section-head">
       <h2>Most-cited in the world</h2>
       <span class="k">By h-index</span>
-      <a class="more" href="/rankings/h-index">Full top 100 →</a>
+      <a class="more" href="/rankings/h-index">Full top 500 →</a>
     </div>
     <div class="board">
       {% for r in top %}{{ m.row(r, r['h_index'], 'h_index', loop.index) }}{% endfor %}
@@ -60,7 +60,7 @@
       <a class="more" href="/rankings/rising-stars">See all →</a>
     </div>
     <div class="board">
-      {% for r in feats['rising__global'] %}{{ m.row(r, r['h_index'], 'h_index', loop.index) }}{% endfor %}
+      {% for r in feats['rising__global'] %}{{ m.row(r, r['value'], 'rising', loop.index) }}{% endfor %}
     </div>
   </div>
 </section>

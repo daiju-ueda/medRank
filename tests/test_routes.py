@@ -52,7 +52,43 @@ def test_search_json(client):
     assert r.status_code == 200 and isinstance(r.json(), list)
 
 
-def test_sitemap_and_methodology(client):
+def test_sitemap_index_and_shards(client):
     assert client.get("/methodology").status_code == 200
     sm = client.get("/sitemap.xml")
-    assert sm.status_code == 200 and "urlset" in sm.text
+    assert sm.status_code == 200 and "sitemapindex" in sm.text
+    assert "sitemap-researchers-0.xml" in sm.text
+    core = client.get("/sitemap-core.xml")
+    assert core.status_code == 200 and "/rankings/h-index" in core.text
+    shard = client.get("/sitemap-researchers-0.xml")
+    assert shard.status_code == 200 and "/researcher/A" in shard.text
+    assert client.get("/sitemap-researchers-999.xml").status_code == 404
+
+
+def test_html_404_page(client):
+    r = client.get("/researcher/A0-nobody")
+    assert r.status_code == 404
+    assert "isn't in the map" in r.text          # 素のJSONでなくブランドされた404
+
+
+def test_cache_headers(client):
+    r = client.get("/rankings/h-index")
+    assert "max-age" in r.headers.get("cache-control", "")
+
+
+def test_ranking_pagination(client):
+    p1 = client.get("/rankings/h-index")
+    p2 = client.get("/rankings/h-index?page=2")
+    assert p1.status_code == p2.status_code == 200
+    assert p1.text != p2.text
+
+
+def test_og_images(client):
+    import sqlite3
+    from medrank import config as cfg
+    c = sqlite3.connect(cfg.DB_PATH)
+    rid = c.execute("SELECT id FROM researchers LIMIT 1").fetchone()[0]
+    r = client.get(f"/og/researcher/{rid}.png")
+    assert r.status_code == 200 and r.headers["content-type"] == "image/png"
+    assert r.content[:8] == b"\x89PNG\r\n\x1a\n"
+    r2 = client.get("/og/ranking.png?key=h_index__global")
+    assert r2.status_code == 200 and r2.content[:4] == b"\x89PNG"

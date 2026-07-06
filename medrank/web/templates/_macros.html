@@ -23,7 +23,7 @@
     <div class="nm">{{ r['name'] }}</div>
     <div class="mt">
       {{ r['institution_name'] or 'Unaffiliated' }}
-      {% if r['primary_field'] %}· {{ r['primary_field'].replace('-', ' ')|title }}{% endif %}
+      {% if r['primary_field'] %}· {{ field_short.get(r['primary_field'], r['primary_field']) }}{% endif %}
       {% if r['country_code'] %}· {{ r['country_code'] }}{% endif %}
     </div>
   </div>

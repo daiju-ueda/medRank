@@ -20,11 +20,13 @@
 <section class="prof-head">
   <div class="wrap">
     <div class="eyebrow">Researcher profile
-      {% if r['primary_field'] %}· {{ r['primary_field'].replace('-',' ')|title }}{% endif %}</div>
+      {% if r['primary_field'] %}· {{ field_names.get(r['primary_field'], r['primary_field']) }}{% endif %}</div>
     <h1>{{ r['name'] }}</h1>
     <div class="prof-affil">
-      {{ r['institution_name'] or 'Unaffiliated' }}{% if r['country_code'] %} · {{ r['country_code'] }}{% endif %}
-      {% if r['orcid'] %} · <a href="https://orcid.org/{{ r['orcid'] }}">ORCID</a>{% endif %}
+      {% if r['institution_id'] %}<a href="/institutions/{{ slug.researcher_slug(r['institution_id'], r['institution_name']) }}">{{ r['institution_name'] }}</a>
+      {% else %}{{ r['institution_name'] or 'Unaffiliated' }}{% endif %}
+      {% if r['country_code'] %} · <a href="/countries/{{ r['country_code'] }}">{{ r['country_code'] }}</a>{% endif %}
+      {% if r['orcid'] %} · <a href="https://orcid.org/{{ r['orcid'] }}" rel="noopener">ORCID</a>{% endif %}
     </div>
   </div>
 </section>
@@ -50,12 +52,7 @@
     <span class="k">{{ appears|length }} rankings</span></div>
   <div class="appears">
     {% for a in appears %}
-    {% set base = a['ranking_key'].split('__')[0].replace('_','-') %}
-    {% set k = a['ranking_key'] %}
-    {% if '__field=' in k %}{% set href = '/rankings/' ~ base ~ '/' ~ k.split('=')[1] %}
-    {% elif '__country=' in k %}{% set href = '/rankings/' ~ base ~ '/all/' ~ k.split('=')[1] %}
-    {% else %}{% set href = '/rankings/' ~ (base if base != 'rising' else 'rising-stars') %}{% endif %}
-    <a href="{{ href }}">
+    <a href="{{ ranking_url(a['ranking_key']) }}">
       <span><span class="ap-rk">#{{ a['rank'] }}</span> &nbsp; {{ a['title'] }}</span>
       <span class="badge">{{ a['category'] }}</span>
     </a>

@@ -1,6 +1,9 @@
 import sqlite3
 from pathlib import Path
 
+from medrank import config
+from medrank.etl.aggregate import COUNTRY_NAMES
+
 CLASSIC = {  # metric -> (列, 表示名)
     "h_index": ("h_index", "H-index"),
     "citations": ("cited_by_count", "Total Citations"),
@@ -30,7 +33,7 @@ def _insert(db, key, col, where, top_n, meta) -> int:
     return inserted
 
 
-def build_rankings(db_path: Path, top_n: int = 100) -> int:
+def build_rankings(db_path: Path, top_n: int = config.RANKING_SIZE) -> int:
     db = sqlite3.connect(db_path)
     db.execute("DELETE FROM rankings")
     db.execute("DELETE FROM ranking_meta")
@@ -51,22 +54,25 @@ def build_rankings(db_path: Path, top_n: int = 100) -> int:
         emit(f"{m}__global", col, "",
              f"World's Top Medical Researchers by {label}", "classic", metric=m)
         for f in fields:
+            fname = config.FIELD_NAMES.get(f, f.replace("-", " ").title())
             emit(f"{m}__field={f}", col, f"WHERE primary_field='{f}'",
-                 f"Top {f.replace('-', ' ').title()} Researchers by {label}",
+                 f"Top {fname} Researchers by {label}",
                  "classic", field=f, metric=m)
         for c in countries:
+            cname = COUNTRY_NAMES.get(c, c)
             emit(f"{m}__country={c}", col, f"WHERE country_code='{c}'",
-                 f"Top Medical Researchers in {c} by {label}",
+                 f"Top Medical Researchers in {cname} by {label}",
                  "classic", country=c, metric=m)
 
     for m, (col, label) in TREND.items():
         cat = "trend" if m == "rising" else "story"
         emit(f"{m}__global", col, f"WHERE {col} > 0", label, cat, metric=m)
 
-    # Young Guns: キャリア10年以内で h_index 上位
+    # Young Guns: キャリア10年以内 かつ 現役(直近2年に出版あり)で h_index 上位
     emit("young_guns__global", "h_index",
          "WHERE last_pub_year IS NOT NULL AND first_pub_year IS NOT NULL "
-         "AND (last_pub_year - first_pub_year) <= 10",
+         f"AND (last_pub_year - first_pub_year) <= 10 "
+         f"AND last_pub_year >= {config.CURRENT_YEAR - 2}",
          "Young Guns — High Impact Early in Career", "trend", metric="young_guns")
 
     db.commit()

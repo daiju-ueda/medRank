@@ -25,8 +25,11 @@ def sparkline(counts, width=104, height=28, now_year=CURRENT_YEAR):
     line = " ".join(f"{x:.1f},{y:.1f}" for x, y in pts)
     area = f"0,{height} " + line + f" {width},{height}"
     cx, cy = pts[-1]
+    # 傾向で色分け: 直近3年 vs その前3年(1年目は不完全なことが多いので比較から除外)
+    recent, prior = sum(vals[-4:-1]), sum(vals[-7:-4])
+    trend = "spark-up" if recent >= prior else "spark-down"
     return (
-        f'<svg class="spark" viewBox="0 0 {width} {height}" width="{width}" height="{height}" '
+        f'<svg class="spark {trend}" viewBox="0 0 {width} {height}" width="{width}" height="{height}" '
         f'preserveAspectRatio="none" aria-hidden="true">'
         f'<polygon class="spark-area" points="{area}"/>'
         f'<polyline class="spark-line" points="{line}"/>'
