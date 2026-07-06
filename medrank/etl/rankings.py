@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 
 from medrank import config
-from medrank.etl.aggregate import COUNTRY_NAMES
+from medrank.etl.aggregate import country_name
 
 CLASSIC = {  # metric -> (列, 表示名)
     "h_index": ("h_index", "H-index"),
@@ -59,7 +59,7 @@ def build_rankings(db_path: Path, top_n: int = config.RANKING_SIZE) -> int:
                  f"Top {fname} Researchers by {label}",
                  "classic", field=f, metric=m)
         for c in countries:
-            cname = COUNTRY_NAMES.get(c, c)
+            cname = country_name(c)
             emit(f"{m}__country={c}", col, f"WHERE country_code='{c}'",
                  f"Top Medical Researchers in {cname} by {label}",
                  "classic", country=c, metric=m)

@@ -1,4 +1,5 @@
 duckdb==1.5.4
+pycountry
 fastapi
 uvicorn[standard]
 jinja2

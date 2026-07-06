@@ -2,6 +2,9 @@ import sqlite3
 import statistics
 from pathlib import Path
 
+import pycountry
+
+# 主要国は短く自然な名前を優先(pycountry の "Russian Federation" 等より読みやすい)
 COUNTRY_NAMES = {
     "JP": "Japan", "US": "United States", "GB": "United Kingdom", "CN": "China",
     "DE": "Germany", "FR": "France", "CA": "Canada", "IT": "Italy", "AU": "Australia",
@@ -14,6 +17,16 @@ COUNTRY_NAMES = {
     "NZ": "New Zealand", "IE": "Ireland", "CZ": "Czechia", "HU": "Hungary", "CL": "Chile",
     "CO": "Colombia", "PK": "Pakistan", "NG": "Nigeria", "UA": "Ukraine", "RO": "Romania",
 }
+
+
+def country_name(code: str) -> str:
+    """ISO 3166 alpha-2 -> 表示名。主要国は上のキュレート名、残りは pycountry。"""
+    if code in COUNTRY_NAMES:
+        return COUNTRY_NAMES[code]
+    c = pycountry.countries.get(alpha_2=code)
+    if c:
+        return getattr(c, "common_name", None) or c.name
+    return code
 
 
 def aggregate(db_path: Path):
@@ -51,7 +64,7 @@ def aggregate(db_path: Path):
         med = statistics.median(int(x) for x in hs.split(","))
         db.execute(
             "INSERT INTO countries (code, name, researcher_count, median_h_index, total_citations) VALUES (?,?,?,?,?)",
-            (code, COUNTRY_NAMES.get(code, code), cnt, med, cites),
+            (code, country_name(code), cnt, med, cites),
         )
     ninst = db.execute("SELECT count(*) FROM institutions").fetchone()[0]
     ncty = db.execute("SELECT count(*) FROM countries").fetchone()[0]

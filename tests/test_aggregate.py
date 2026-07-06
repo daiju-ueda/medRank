@@ -28,3 +28,11 @@ def test_aggregate_counts(tmp_path):
     assert inst == (2, 1500)
     jp = db.execute("SELECT researcher_count FROM countries WHERE code='JP'").fetchone()[0]
     assert jp == 2
+
+
+def test_country_name_covers_iso_and_prefers_short():
+    from medrank.etl.aggregate import country_name
+    assert country_name("BD") == "Bangladesh"      # pycountry fallback
+    assert country_name("RU") == "Russia"          # curated short name wins
+    assert country_name("ET") == "Ethiopia"
+    assert country_name("ZZ") == "ZZ"              # unknown -> raw code
