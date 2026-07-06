@@ -21,16 +21,45 @@ _SLUG_CASE = "\n".join(
 )
 
 
-def extract_researchers(parquet_glob: str, out_db: Path) -> int:
+def extract_researchers(parquet_glob, out_db: Path, batch_size: int = 40) -> int:
+    """parquet(グロブ・単一ファイル・ファイルリスト)から医療著者を抽出して SQLite へ。
+
+    53GB・約2000ファイルを1クエリで流すと DuckDB がメモリを使い切り OOM kill される
+    ため、ファイルをバッチに分けて逐次 INSERT する。
+    """
+    import glob as globmod
+
     biomed_fields = ",".join(f"'{f.split('/')[-1]}'" for f in config.BIOMED_FIELDS)
     health_num = config.HEALTH_DOMAIN.split("/")[-1]
     biomed_num = config.BIOMED_DOMAIN.split("/")[-1]
+
+    if isinstance(parquet_glob, (list, tuple)):
+        files = list(parquet_glob)
+    else:
+        files = sorted(globmod.glob(str(parquet_glob))) or [str(parquet_glob)]
 
     con = duckdb.connect()
     con.execute("INSTALL httpfs; LOAD httpfs;")
     con.execute("INSTALL sqlite; LOAD sqlite;")
     con.execute("SET s3_region='us-east-1'; SET enable_progress_bar=false;")
+    con.execute("SET preserve_insertion_order=false;")
+    con.execute("SET memory_limit='8GB';")
     con.execute(f"ATTACH '{out_db}' AS out (TYPE sqlite);")
+    for i in range(0, len(files), batch_size):
+        batch = files[i:i + batch_size]
+        flist = ",".join(f"'{f}'" for f in batch)
+        _insert_batch(con, flist, biomed_fields, health_num, biomed_num)
+        print(f"  extract: {min(i + batch_size, len(files))}/{len(files)} files", flush=True)
+    con.execute("DETACH out;")
+    con.close()
+
+    db = sqlite3.connect(out_db)
+    n = db.execute("SELECT count(*) FROM researchers").fetchone()[0]
+    db.close()
+    return n
+
+
+def _insert_batch(con, flist, biomed_fields, health_num, biomed_num):
     con.execute(f"""
         INSERT INTO out.researchers
         SELECT
@@ -52,7 +81,7 @@ def extract_researchers(parquet_glob: str, out_db: Path) -> int:
           to_json(t.cby) AS counts_by_year,
           0.0 AS rising_score,
           0.0 AS consistency_score
-        FROM read_parquet('{parquet_glob}') a,
+        FROM read_parquet([{flist}]) a,
         LATERAL (SELECT
           regexp_replace(a.topics[1].domain.id, '^.*/', '') AS domain_short,
           'fields/' || regexp_replace(a.topics[1].field.id, '^.*/', '') AS field_short,
@@ -69,10 +98,3 @@ def extract_researchers(parquet_glob: str, out_db: Path) -> int:
           )
           AND (CASE {_SLUG_CASE} ELSE NULL END) IS NOT NULL
     """)
-    con.execute("DETACH out;")
-    con.close()
-
-    db = sqlite3.connect(out_db)
-    n = db.execute("SELECT count(*) FROM researchers").fetchone()[0]
-    db.close()
-    return n
