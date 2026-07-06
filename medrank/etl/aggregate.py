@@ -21,15 +21,25 @@ def aggregate(db_path: Path):
     db.execute("DELETE FROM institutions")
     db.execute("DELETE FROM countries")
     db.execute("""
-        INSERT INTO institutions (id, name, country_code, researcher_count, total_citations, top_field)
+        INSERT INTO institutions (id, name, country_code, researcher_count, total_citations)
         SELECT institution_id, max(institution_name), max(country_code),
-               count(*), sum(cited_by_count),
-               (SELECT primary_field FROM researchers r2
-                WHERE r2.institution_id = r1.institution_id
-                GROUP BY primary_field ORDER BY count(*) DESC LIMIT 1)
-        FROM researchers r1
+               count(*), sum(cited_by_count)
+        FROM researchers
         WHERE institution_id IS NOT NULL AND institution_id <> ''
         GROUP BY institution_id
+    """)
+    # top_field: 各機関で最も多い primary_field を1パスで(相関サブクエリを避ける)
+    db.execute("""
+        WITH ranked AS (
+          SELECT institution_id, primary_field,
+                 row_number() OVER (PARTITION BY institution_id ORDER BY count(*) DESC) AS rn
+          FROM researchers
+          WHERE institution_id IS NOT NULL AND institution_id <> '' AND primary_field IS NOT NULL
+          GROUP BY institution_id, primary_field
+        )
+        UPDATE institutions
+        SET top_field = (SELECT primary_field FROM ranked
+                         WHERE ranked.institution_id = institutions.id AND ranked.rn = 1)
     """)
     rows = db.execute("""
         SELECT country_code, group_concat(h_index), count(*), sum(cited_by_count)

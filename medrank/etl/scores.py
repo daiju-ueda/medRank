@@ -60,16 +60,16 @@ def consistency_score(counts, now_year: int = CURRENT_YEAR) -> float:
 def update_scores(db_path: Path, now_year: int = CURRENT_YEAR) -> int:
     db = sqlite3.connect(db_path)
     rows = db.execute("SELECT id, counts_by_year FROM researchers").fetchall()
-    n = 0
+    updates = []
     for rid, cby in rows:
         counts = json.loads(cby) if cby else []
-        cs = career_start(counts)
-        db.execute(
-            "UPDATE researchers SET rising_score=?, consistency_score=?, "
-            "first_pub_year=coalesce(?, first_pub_year) WHERE id=?",
-            (rising_score(counts, now_year), consistency_score(counts, now_year), cs, rid),
-        )
-        n += 1
+        updates.append((rising_score(counts, now_year), consistency_score(counts, now_year),
+                        career_start(counts), rid))
+    db.executemany(
+        "UPDATE researchers SET rising_score=?, consistency_score=?, "
+        "first_pub_year=coalesce(?, first_pub_year) WHERE id=?",
+        updates,
+    )
     db.commit()
     db.close()
-    return n
+    return len(updates)
