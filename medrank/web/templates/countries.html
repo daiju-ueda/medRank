@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Medical Research by Country — MedRank{% endblock %}
+{% block description %}How countries compare in medical and biomedical research: number of active researchers, median h-index and total citations.{% endblock %}
+{% block content %}
+<section class="hero" style="padding:52px 0 26px"><div class="wrap">
+  <div class="eyebrow">The global map</div>
+  <h1 style="font-size:clamp(30px,5vw,50px)">Medical research by country</h1>
+  <p class="lede">Every country with at least a handful of listed researchers, ranked by how many call it home.</p>
+</div></section>
+<section class="section" style="padding-top:24px"><div class="wrap">
+  <table class="tbl">
+    <thead><tr><th class="num">#</th><th>Country</th>
+      <th class="num">Researchers</th><th class="num">Median h-index</th><th class="num">Citations</th></tr></thead>
+    <tbody>
+    {% for c in rows %}
+    <tr>
+      <td class="num">{{ loop.index }}</td>
+      <td><a href="/countries/{{ c['code'] }}">{{ c['name'] }}</a></td>
+      <td class="num">{{ '{:,}'.format(c['researcher_count']) }}</td>
+      <td class="num">{{ c['median_h_index']|round(0)|int }}</td>
+      <td class="num">{{ '{:,}'.format(c['total_citations']) }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div></section>
+{% endblock %}

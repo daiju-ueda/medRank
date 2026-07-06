@@ -1,0 +1,33 @@
+{% macro metric_label(metric) -%}
+{%- if metric == 'h_index' -%}h-index
+{%- elif metric == 'citations' -%}citations
+{%- elif metric == 'works' -%}papers
+{%- elif metric == 'rising' -%}momentum
+{%- elif metric == 'consistency' -%}steadiness
+{%- else -%}score{%- endif -%}
+{%- endmacro %}
+
+{% macro fmt(v) -%}
+{%- if v is none -%}—
+{%- elif v >= 1000000 -%}{{ '%.1f'|format(v/1000000) }}M
+{%- elif v >= 1000 -%}{{ '%.1f'|format(v/1000) }}k
+{%- elif v == (v|int) -%}{{ v|int }}
+{%- else -%}{{ '%.1f'|format(v) }}{%- endif -%}
+{%- endmacro %}
+
+{# a single pulse row. rank is passed explicitly since plain SELECTs lack a rank column #}
+{% macro row(r, value, metric, rank) %}
+<a class="row" href="/researcher/{{ slug.researcher_slug(r['id'], r['name']) }}">
+  <div class="rk {{ 'top' if rank and rank <= 3 else '' }}">{{ rank }}</div>
+  <div class="who">
+    <div class="nm">{{ r['name'] }}</div>
+    <div class="mt">
+      {{ r['institution_name'] or 'Unaffiliated' }}
+      {% if r['primary_field'] %}· {{ r['primary_field'].replace('-', ' ')|title }}{% endif %}
+      {% if r['country_code'] %}· {{ r['country_code'] }}{% endif %}
+    </div>
+  </div>
+  <div class="val">{{ fmt(value) }}<small>{{ metric_label(metric) }}</small></div>
+  <div class="spark-wrap">{{ r['counts_by_year'] | sparkline | safe }}</div>
+</a>
+{% endmacro %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{% if q %}“{{ q }}” — {% endif %}Search — MedRank{% endblock %}
+{% block content %}
+<section class="hero" style="padding:46px 0 24px"><div class="wrap">
+  <div class="eyebrow">Search</div>
+  <h1 style="font-size:clamp(26px,4vw,40px)">
+    {% if q %}Results for “{{ q }}”{% else %}Find a researcher{% endif %}</h1>
+</div></section>
+<section class="section" style="padding-top:22px"><div class="wrap">
+  {% if not q %}
+    <p class="empty">Type a name, institution or field in the search box above.</p>
+  {% elif res %}
+    <div class="board">
+      {% for r in res %}{{ m.row(r, r['h_index'], 'h_index', loop.index) }}{% endfor %}
+    </div>
+  {% else %}
+    <p class="empty">No researchers matched “{{ q }}”.</p>
+  {% endif %}
+</div></section>
+{% endblock %}

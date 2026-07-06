@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Leading Institutions in Medical Research — MedRank{% endblock %}
+{% block description %}The institutions producing the most cited medical and biomedical research worldwide.{% endblock %}
+{% block content %}
+<section class="hero" style="padding:52px 0 26px"><div class="wrap">
+  <div class="eyebrow">Where research is done</div>
+  <h1 style="font-size:clamp(30px,5vw,50px)">Leading institutions</h1>
+  <p class="lede">Ranked by the total citations earned by their listed medical researchers.</p>
+</div></section>
+<section class="section" style="padding-top:24px"><div class="wrap">
+  <table class="tbl">
+    <thead><tr><th class="num">#</th><th>Institution</th><th>Country</th>
+      <th class="num">Researchers</th><th class="num">Citations</th></tr></thead>
+    <tbody>
+    {% for i in rows %}
+    <tr>
+      <td class="num">{{ loop.index }}</td>
+      <td><a href="/institutions/{{ slug.researcher_slug(i['id'], i['name']) }}">{{ i['name'] }}</a></td>
+      <td>{{ i['country_code'] or '—' }}</td>
+      <td class="num">{{ '{:,}'.format(i['researcher_count']) }}</td>
+      <td class="num">{{ '{:,}'.format(i['total_citations']) }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div></section>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}MedRank — The World's Medical Researchers, Ranked{% endblock %}
+
+{% block content %}
+{% set top = feats['h_index__global'] %}
+{% set lead = top[0] if top else none %}
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">A living map of medical research</div>
+    <h1>Every researcher has a pulse. This is where you read it.</h1>
+    <p class="lede">
+      {{ '{:,}'.format(stats.get('researcher_count', 0)|int) if stats.get('researcher_count') else 'Millions of' }}
+      medical and biomedical researchers, drawn from open citation data and ranked by the
+      trace they leave in the literature — not a hall of fame, but a map of the whole field.
+    </p>
+    <div class="hero-cta">
+      <a class="btn" href="/rankings/h-index">See the world ranking</a>
+      <a class="btn ghost" href="/rankings/rising-stars">Rising stars →</a>
+    </div>
+
+    {% if lead %}
+    <div class="hero-feature">
+      <div class="hf-body">
+        <div>
+          <div class="hf-rank">#1 · World · h-index</div>
+          <div class="hf-name">{{ lead['name'] }}</div>
+          <div class="hf-meta">{{ lead['institution_name'] or 'Unaffiliated' }}{% if lead['country_code'] %} · {{ lead['country_code'] }}{% endif %}</div>
+        </div>
+        <div class="hf-metric">
+          <b>{{ lead['h_index'] }}</b><span>h-index</span>
+        </div>
+      </div>
+      <div class="hero-pulse-holder">
+        {{ lead['counts_by_year'] | sparkline(880, 96) | safe | replace('class="spark"', 'class="spark hero-pulse"') }}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Most-cited in the world</h2>
+      <span class="k">By h-index</span>
+      <a class="more" href="/rankings/h-index">Full top 100 →</a>
+    </div>
+    <div class="board">
+      {% for r in top %}{{ m.row(r, r['h_index'], 'h_index', loop.index) }}{% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Rising stars</h2>
+      <span class="k">Fastest-climbing citation pulse</span>
+      <a class="more" href="/rankings/rising-stars">See all →</a>
+    </div>
+    <div class="board">
+      {% for r in feats['rising__global'] %}{{ m.row(r, r['h_index'], 'h_index', loop.index) }}{% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head"><h2>By country</h2><span class="k">Where the work happens</span>
+      <a class="more" href="/countries">All countries →</a></div>
+    <div class="chip-grid">
+      {% for c in countries %}
+      <a class="chip" href="/countries/{{ c['code'] }}">
+        <span class="cn">{{ c['name'] }}</span>
+        <span class="cc">{{ '{:,}'.format(c['researcher_count']) }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

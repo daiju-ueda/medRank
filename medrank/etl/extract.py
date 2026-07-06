@@ -47,15 +47,17 @@ def extract_researchers(parquet_glob: str, out_db: Path) -> int:
           a.last_known_institutions[1].display_name AS institution_name,
           CASE {_SLUG_CASE} ELSE NULL END AS primary_field,
           a.topics[1].display_name AS primary_topic,
-          list_min(list_transform(a.counts_by_year, x -> x.year)) AS first_pub_year,
-          list_max(list_transform(a.counts_by_year, x -> x.year)) AS last_pub_year,
-          to_json(a.counts_by_year) AS counts_by_year,
+          list_min(list_transform(t.cby, x -> x.year)) AS first_pub_year,
+          list_max(list_transform(t.cby, x -> x.year)) AS last_pub_year,
+          to_json(t.cby) AS counts_by_year,
           0.0 AS rising_score,
           0.0 AS consistency_score
         FROM read_parquet('{parquet_glob}') a,
         LATERAL (SELECT
           regexp_replace(a.topics[1].domain.id, '^.*/', '') AS domain_short,
-          'fields/' || regexp_replace(a.topics[1].field.id, '^.*/', '') AS field_short
+          'fields/' || regexp_replace(a.topics[1].field.id, '^.*/', '') AS field_short,
+          -- OpenAlex の counts_by_year には壊れた年(0, 1197 等)が混入するため除去
+          list_filter(a.counts_by_year, x -> x.year >= 1900 AND x.year <= {config.CURRENT_YEAR}) AS cby
         ) t
         WHERE a.works_count >= {config.MIN_WORKS}
           AND a.summary_stats.h_index >= {config.MIN_H}

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en" data-theme-auto>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}MedRank — The World's Medical Researchers{% endblock %}</title>
+<meta name="description" content="{% block description %}A living map of the world's medical and biomedical researchers, ranked by scientific impact. Built on open citation data.{% endblock %}">
+<link rel="canonical" href="{{ site_url }}{{ request.url.path }}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MedRank">
+<meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
+<meta property="og:description" content="{{ self.description() }}">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" as="style" href="/static/style.css">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>❤️</text></svg>">
+{% block head_extra %}{% endblock %}
+</head>
+<body>
+<header class="mast">
+  <div class="wrap mast-in">
+    <a class="brand" href="/">Med<span class="pulse-mark">·</span>Rank</a>
+    <nav>
+      <a href="/rankings">Rankings</a>
+      <a href="/countries">Countries</a>
+      <a href="/institutions">Institutions</a>
+      <a href="/methodology">Method</a>
+    </nav>
+    <span class="grow"></span>
+    <div class="searchbox">
+      <input id="q" type="search" placeholder="Search researchers…" autocomplete="off"
+             aria-label="Search researchers">
+      <div id="suggest" class="suggest" hidden></div>
+    </div>
+  </div>
+</header>
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer>
+  <div class="wrap foot-in">
+    <div>
+      <strong style="font-family:var(--ff-display);color:var(--ink)">MedRank</strong> —
+      a map of medical research, not a hall of fame.<br>
+      Data from <a href="https://openalex.org">OpenAlex</a> (CC0). See the
+      <a href="/methodology">methodology</a>.
+    </div>
+    <div>Non-commercial · rankings recomputed monthly</div>
+  </div>
+</footer>
+
+<script src="/static/app.js" defer></script>
+{% block body_extra %}{% endblock %}
+</body>
+</html>

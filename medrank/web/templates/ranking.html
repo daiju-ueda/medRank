@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ meta['title'] }} — MedRank{% endblock %}
+{% block description %}{{ meta['title'] }}. Ranked from open citation data, recomputed monthly. {{ rows|length }} researchers.{% endblock %}
+
+{% block content %}
+<div class="wrap crumbs"><a href="/rankings">Rankings</a> / {{ meta['metric'] }}{% if meta['field'] %} / {{ meta['field'] }}{% endif %}{% if meta['country'] %} / {{ meta['country'] }}{% endif %}</div>
+<section class="hero" style="padding:44px 0 30px">
+  <div class="wrap">
+    <div class="eyebrow">
+      {% if meta['category'] == 'classic' %}Ranking
+      {% elif meta['category'] == 'trend' %}Momentum
+      {% else %}Reading{% endif %}
+      · {{ rows|length }} researchers
+    </div>
+    <h1 style="font-size:clamp(30px,5vw,50px)">{{ meta['title'] }}</h1>
+  </div>
+</section>
+
+<section class="section" style="padding-top:26px">
+  <div class="wrap">
+    {% if rows %}
+    <div class="board">
+      {% for r in rows %}{{ m.row(r, r['value'], meta['metric'], r['rank']) }}{% endfor %}
+    </div>
+    {% else %}
+    <p class="empty">No researchers in this ranking yet.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

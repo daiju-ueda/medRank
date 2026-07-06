@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ inst['name'] }} — MedRank{% endblock %}
+{% block description %}{{ inst['name'] }}: {{ '{:,}'.format(inst['researcher_count']) }} listed medical researchers, {{ '{:,}'.format(inst['total_citations']) }} total citations.{% endblock %}
+{% block content %}
+<div class="wrap crumbs"><a href="/institutions">Institutions</a> / {{ inst['name'] }}</div>
+<section class="prof-head"><div class="wrap">
+  <div class="eyebrow">Institution{% if inst['country_code'] %} · {{ inst['country_code'] }}{% endif %}</div>
+  <h1>{{ inst['name'] }}</h1>
+</div></section>
+<section class="wrap">
+  <div class="stat-strip">
+    <div class="stat"><b>{{ '{:,}'.format(inst['researcher_count']) }}</b><span>researchers</span></div>
+    <div class="stat"><b>{{ m.fmt(inst['total_citations']) }}</b><span>total citations</span></div>
+    {% if inst['top_field'] %}<div class="stat"><b style="font-size:18px;font-family:var(--ff-display)">{{ inst['top_field'].replace('-',' ')|title }}</b><span>strongest field</span></div>{% endif %}
+  </div>
+  <div class="section-head" style="margin-top:14px"><h2 style="font-size:24px">Top researchers here</h2>
+    <span class="k">By h-index</span></div>
+  <div class="board">
+    {% for r in members %}{{ m.row(r, r['h_index'], 'h_index', loop.index) }}{% endfor %}
+  </div>
+  <div style="height:30px"></div>
+</section>
+{% endblock %}

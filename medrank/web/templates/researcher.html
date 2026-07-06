@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ r['name'] }} — MedRank profile{% endblock %}
+{% block description %}{{ r['name'] }}{% if r['institution_name'] %}, {{ r['institution_name'] }}{% endif %}: h-index {{ r['h_index'] }}, {{ '{:,}'.format(r['cited_by_count']) }} citations across {{ '{:,}'.format(r['works_count']) }} publications.{% endblock %}
+
+{% block head_extra %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": {{ r['name']|tojson }},
+  {% if r['orcid'] %}"identifier": "https://orcid.org/{{ r['orcid'] }}",{% endif %}
+  {% if r['institution_name'] %}"affiliation": {"@type":"Organization","name": {{ r['institution_name']|tojson }}},{% endif %}
+  "url": "{{ site_url }}{{ request.url.path }}"
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="prof-head">
+  <div class="wrap">
+    <div class="eyebrow">Researcher profile
+      {% if r['primary_field'] %}· {{ r['primary_field'].replace('-',' ')|title }}{% endif %}</div>
+    <h1>{{ r['name'] }}</h1>
+    <div class="prof-affil">
+      {{ r['institution_name'] or 'Unaffiliated' }}{% if r['country_code'] %} · {{ r['country_code'] }}{% endif %}
+      {% if r['orcid'] %} · <a href="https://orcid.org/{{ r['orcid'] }}">ORCID</a>{% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="stat-strip">
+    <div class="stat"><b>{{ r['h_index'] }}</b><span>h-index</span></div>
+    <div class="stat"><b>{{ m.fmt(r['cited_by_count']) }}</b><span>citations</span></div>
+    <div class="stat"><b>{{ m.fmt(r['works_count']) }}</b><span>publications</span></div>
+    <div class="stat"><b>{{ r['i10_index'] }}</b><span>i10-index</span></div>
+    {% if r['first_pub_year'] %}<div class="stat"><b>{{ r['last_pub_year'] - r['first_pub_year'] }}</b><span>active years</span></div>{% endif %}
+  </div>
+
+  <div class="pulse-panel">
+    <h3>Citation pulse</h3>
+    <p class="cap">Citations received per year over the last decade.
+      {% if r['first_pub_year'] %}Sustained output since ~{{ r['first_pub_year'] }}.{% endif %}</p>
+    {{ r['counts_by_year'] | sparkline(1040, 150) | safe }}
+  </div>
+
+  {% if appears %}
+  <div class="section-head" style="margin-top:10px"><h2 style="font-size:24px">Appears in</h2>
+    <span class="k">{{ appears|length }} rankings</span></div>
+  <div class="appears">
+    {% for a in appears %}
+    {% set base = a['ranking_key'].split('__')[0].replace('_','-') %}
+    {% set k = a['ranking_key'] %}
+    {% if '__field=' in k %}{% set href = '/rankings/' ~ base ~ '/' ~ k.split('=')[1] %}
+    {% elif '__country=' in k %}{% set href = '/rankings/' ~ base ~ '/all/' ~ k.split('=')[1] %}
+    {% else %}{% set href = '/rankings/' ~ (base if base != 'rising' else 'rising-stars') %}{% endif %}
+    <a href="{{ href }}">
+      <span><span class="ap-rk">#{{ a['rank'] }}</span> &nbsp; {{ a['title'] }}</span>
+      <span class="badge">{{ a['category'] }}</span>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <p class="crumbs" style="padding:30px 0">Data from OpenAlex · <a href="/methodology">how these numbers are computed</a></p>
+</section>
+{% endblock %}

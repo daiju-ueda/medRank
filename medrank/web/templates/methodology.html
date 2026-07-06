@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Methodology — MedRank{% endblock %}
+{% block description %}How MedRank defines a medical researcher, where the data comes from, and exactly how every ranking is computed.{% endblock %}
+{% block content %}
+<section class="hero" style="padding:52px 0 24px"><div class="wrap">
+  <div class="eyebrow">How this works</div>
+  <h1 style="font-size:clamp(30px,5vw,50px)">Methodology</h1>
+  <p class="lede">A ranking is only as trustworthy as the rule behind it. Here is every rule we use.</p>
+</div></section>
+
+<section class="section" style="padding-top:22px"><div class="wrap prose">
+  <h2>Where the data comes from</h2>
+  <p>Every figure on MedRank is derived from <a href="https://openalex.org">OpenAlex</a>, an open,
+  freely licensed (CC0) catalog of the world's scholarly work. We take a monthly snapshot of its
+  author records and recompute the entire site from scratch. We never edit the underlying numbers.</p>
+
+  <h2>Who counts as a “medical researcher”</h2>
+  <p>MedRank is a map of biomedical research — from the clinic to the lab bench — not just of clinicians.
+  We include an author when the primary topic of their work falls in the
+  <strong>Health Sciences</strong> domain (clinical medicine, public health, nursing, pharmacology,
+  dentistry and related fields), <em>or</em> in one of three <strong>Life Sciences</strong> fields that
+  drive modern medicine: <code>Biochemistry, Genetics &amp; Molecular Biology</code>,
+  <code>Immunology &amp; Microbiology</code>, and <code>Neuroscience</code>.</p>
+  <p>To keep the map to real researchers rather than one-off authors, we require at least
+  <strong>5 publications</strong> and an <strong>h-index of 2 or more</strong>. This threshold is
+  deliberately low: raising it would erase early-career researchers and those outside the largest
+  research economies, which is exactly the part of the map worth keeping.</p>
+
+  <h2>How the rankings are computed</h2>
+  <p><strong>H-index, citations and publications</strong> are taken directly from the author's record and
+  ranked, worldwide and within each field and country.</p>
+  <p><strong>Rising stars</strong> measures momentum: citations received in the last three years against
+  the three years before, with a gentle correction so that a large, established body of work is not
+  mistaken for a sudden surge.</p>
+  <p><strong>Most consistent</strong> rewards a steady hand — researchers whose yearly citations are both
+  well-distributed across the decade and low in year-to-year swing, rather than a single spike.</p>
+  <p><strong>Young guns</strong> restricts the ranking to researchers whose publishing career spans ten
+  years or less, then ranks them by h-index.</p>
+
+  <h2>Honest limits</h2>
+  <p>Author name disambiguation is hard, and OpenAlex — like every such system — occasionally merges or
+  splits people. Field boundaries are fuzzy: a neuroscientist studying cognition sits next to one
+  studying stroke. A researcher with no listed institution is shown as <em>Unaffiliated</em> rather than
+  dropped. We surface what the data says; we do not claim it is the last word on anyone's career.</p>
+</div></section>
+{% endblock %}

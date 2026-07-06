@@ -17,3 +17,14 @@ def test_consistency_high_for_steady():
     spiky = [{"year": y, "cited_by_count": c}
              for y, c in zip(range(2016, 2026), [0, 0, 0, 0, 0, 0, 0, 0, 0, 500])]
     assert scores.consistency_score(steady) > scores.consistency_score(spiky)
+
+
+def test_career_start_skips_misattributed_tail():
+    counts = ([{"year": y, "works_count": 1, "cited_by_count": 0} for y in (1903, 1911, 1950)]
+              + [{"year": y, "works_count": 200, "cited_by_count": 500} for y in range(2015, 2025)])
+    # 早期の1本エントリは無視し、本格稼働年を返す
+    assert scores.career_start(counts) >= 2015
+
+
+def test_career_start_none_for_empty():
+    assert scores.career_start([]) is None

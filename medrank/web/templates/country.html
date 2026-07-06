@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Top Medical Researchers in {{ c['name'] }} — MedRank{% endblock %}
+{% block description %}The most-cited medical and biomedical researchers based in {{ c['name'] }}, ranked by h-index.{% endblock %}
+{% block content %}
+<div class="wrap crumbs"><a href="/countries">Countries</a> / {{ c['name'] }}</div>
+<section class="prof-head"><div class="wrap">
+  <div class="eyebrow">Country profile</div>
+  <h1>{{ c['name'] }}</h1>
+</div></section>
+<section class="wrap">
+  <div class="stat-strip">
+    <div class="stat"><b>{{ '{:,}'.format(c['researcher_count']) }}</b><span>researchers</span></div>
+    <div class="stat"><b>{{ c['median_h_index']|round(0)|int }}</b><span>median h-index</span></div>
+    <div class="stat"><b>{{ m.fmt(c['total_citations']) }}</b><span>total citations</span></div>
+  </div>
+  {% if top %}
+  <div class="section-head" style="margin-top:14px"><h2 style="font-size:24px">Most-cited researchers</h2>
+    <span class="k">By h-index</span></div>
+  <div class="board">
+    {% for r in top %}{{ m.row(r, r['value'], 'h_index', r['rank']) }}{% endfor %}
+  </div>
+  {% else %}
+  <p class="empty">Not enough researchers for a country ranking yet.</p>
+  {% endif %}
+  <div style="height:30px"></div>
+</section>
+{% endblock %}

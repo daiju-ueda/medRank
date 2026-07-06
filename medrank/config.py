@@ -9,6 +9,7 @@ DB_BUILD_PATH = DATA_DIR / "researchers.build.db"     # 構築中 DB
 PORT = 8110
 MIN_WORKS = 5
 MIN_H = 2
+CURRENT_YEAR = 2026          # ランキング・年次クリーニングの基準年(月次 ETL で更新)
 
 HEALTH_DOMAIN = "domains/4"
 BIOMED_DOMAIN = "domains/1"
