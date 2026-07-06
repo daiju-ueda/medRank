@@ -13,3 +13,7 @@ def test_dry_run_builds_aws_command():
     assert "aws s3 sync" in cmd
     assert "--no-sign-request" in cmd
     assert "s3://openalex/data/parquet/authors/" in cmd
+
+
+def test_sync_deletes_stale_partitions():
+    assert "--delete" in sync.sync_snapshot(dry_run=True)
