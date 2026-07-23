@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 
 from medrank import config
-from medrank.etl import extract, scores, aggregate, rankings, search
+from medrank.etl import extract, scores, aggregate, rankings, search, institutions
 
 SCHEMA = Path(__file__).parent / "schema.sql"
 
@@ -37,6 +37,7 @@ def build(parquet_glob: str, target_db: Path = None, build_db: Path = None) -> d
 
     t0 = time.time()
     n = extract.extract_researchers(parquet_glob, build_db)
+    institutions.canonicalize(build_db)   # 所属名を機関スナップショットの正規名へ統一
     scores.update_scores(build_db)
     ninst, ncty = aggregate.aggregate(build_db)
     nkeys = rankings.build_rankings(build_db)
