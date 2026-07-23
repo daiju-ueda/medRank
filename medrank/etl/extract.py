@@ -62,6 +62,10 @@ def extract_researchers(parquet_glob, out_db: Path, batch_size: int = 40) -> int
 def _insert_batch(con, flist, biomed_fields, health_num, biomed_num):
     con.execute(f"""
         INSERT INTO out.researchers
+          (id, name, orcid, h_index, cited_by_count, works_count, i10_index,
+           two_year_mean_citedness, country_code, institution_id, institution_name,
+           primary_field, primary_topic, first_pub_year, last_pub_year, counts_by_year,
+           rising_score, consistency_score)
         SELECT
           regexp_replace(a.id, '^.*/', '') AS id,
           a.display_name AS name,

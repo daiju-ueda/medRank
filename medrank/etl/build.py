@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 
 from medrank import config
-from medrank.etl import extract, scores, aggregate, rankings, search, institutions
+from medrank.etl import extract, scores, aggregate, rankings, search, institutions, merge
 
 SCHEMA = Path(__file__).parent / "schema.sql"
 
@@ -38,6 +38,10 @@ def build(parquet_glob: str, target_db: Path = None, build_db: Path = None) -> d
     t0 = time.time()
     n = extract.extract_researchers(parquet_glob, build_db)
     institutions.canonicalize(build_db)   # 所属名を機関スナップショットの正規名へ統一
+    mstats = merge.merge_duplicates(build_db)   # 分裂した同一人物の断片を統合
+    conn = sqlite3.connect(build_db)
+    n = conn.execute("SELECT count(*) FROM researchers").fetchone()[0]  # 併合後の実数
+    conn.close()
     scores.update_scores(build_db)
     ninst, ncty = aggregate.aggregate(build_db)
     nkeys = rankings.build_rankings(build_db)
@@ -52,7 +56,10 @@ def build(parquet_glob: str, target_db: Path = None, build_db: Path = None) -> d
 
     os.replace(build_db, target_db)   # アトミック差し替え
     return {"researchers": n, "institutions": ninst, "countries": ncty,
-            "rankings_keys": nkeys, "fts": nfts, "seconds": round(time.time() - t0, 1)}
+            "rankings_keys": nkeys, "fts": nfts,
+            "people_merged": mstats["people_merged"],
+            "fragments_removed": mstats["fragments_removed"],
+            "seconds": round(time.time() - t0, 1)}
 
 
 if __name__ == "__main__":

@@ -16,7 +16,8 @@ CREATE TABLE researchers (
   last_pub_year INTEGER,
   counts_by_year TEXT,      -- JSON
   rising_score REAL DEFAULT 0,
-  consistency_score REAL DEFAULT 0
+  consistency_score REAL DEFAULT 0,
+  merged_from INTEGER DEFAULT 0   -- 併合した断片数(>0 なら h-index は概算・下界)
 );
 CREATE INDEX idx_res_country ON researchers(country_code);
 CREATE INDEX idx_res_field ON researchers(primary_field);
@@ -50,3 +51,6 @@ CREATE TABLE ranking_meta (
 );
 
 CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT);
+
+-- 併合で消えた断片 id -> 生存 id。旧 URL を 301 で正しいプロフィールへ飛ばす。
+CREATE TABLE aliases (old_id TEXT PRIMARY KEY, canonical_id TEXT NOT NULL);

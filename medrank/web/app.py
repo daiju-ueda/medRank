@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from fastapi import FastAPI, Request, HTTPException, Response
-from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.gzip import GZipMiddleware
@@ -139,8 +139,16 @@ def create_app() -> FastAPI:
     @app.get("/researcher/{slug}", response_class=HTMLResponse)
     def researcher_page(request: Request, slug: str):
         db = dbm.get_db()
-        r = queries.researcher(db, slugm.id_from_slug(slug))
+        rid = slugm.id_from_slug(slug)
+        r = queries.researcher(db, rid)
         if not r:
+            # 併合で消えた断片 id なら正しいプロフィールへ 301
+            canon = queries.alias_target(db, rid)
+            if canon:
+                cr = queries.researcher(db, canon)
+                if cr:
+                    return RedirectResponse(
+                        f"/researcher/{slugm.researcher_slug(cr['id'], cr['name'])}", status_code=301)
             raise HTTPException(404)
         return render("researcher.html", request, r=r,
                       appears=queries.researcher_rankings(db, r["id"]),

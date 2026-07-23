@@ -32,8 +32,13 @@
 </section>
 
 <section class="wrap">
+  {% if r['merged_from'] and r['merged_from'] > 0 %}
+  <p class="merge-note">Consolidated from {{ r['merged_from'] + 1 }} OpenAlex author records for the
+    same person. Citations and publications are summed; the h-index shown is the highest of the
+    merged records — a lower bound, since it can't be exactly recomputed without the paper list.</p>
+  {% endif %}
   <div class="stat-strip">
-    <div class="stat"><b>{{ r['h_index'] }}</b><span>h-index</span></div>
+    <div class="stat"><b>{{ r['h_index'] }}{% if r['merged_from'] %}<sup style="font-size:14px;color:var(--slate)">≈</sup>{% endif %}</b><span>h-index</span></div>
     <div class="stat"><b>{{ m.fmt(r['cited_by_count']) }}</b><span>citations</span></div>
     <div class="stat"><b>{{ m.fmt(r['works_count']) }}</b><span>publications</span></div>
     <div class="stat"><b>{{ r['i10_index'] }}</b><span>i10-index</span></div>

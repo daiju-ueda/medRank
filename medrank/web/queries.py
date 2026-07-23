@@ -15,6 +15,11 @@ def researcher(db, id):
     return db.execute("SELECT * FROM researchers WHERE id=?", (id,)).fetchone()
 
 
+def alias_target(db, old_id):
+    row = db.execute("SELECT canonical_id FROM aliases WHERE old_id=?", (old_id,)).fetchone()
+    return row["canonical_id"] if row else None
+
+
 def researcher_rankings(db, id):
     return db.execute(
         """SELECT k.ranking_key, k.rank, m.title, m.category FROM rankings k

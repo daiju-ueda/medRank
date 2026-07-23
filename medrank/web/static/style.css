@@ -255,6 +255,9 @@ svg.worldmap { width: 100%; height: auto; display: block; }
   list-style: none; }
 .country-fold summary::before { content: "▸ "; }
 .country-fold[open] summary::before { content: "▾ "; }
+.merge-note { font-size: 13px; color: var(--slate); background: var(--surface);
+  border-left: 3px solid var(--teal); padding: 10px 14px; border-radius: 0 var(--r) var(--r) 0;
+  margin: 22px 0 0; max-width: 70ch; }
 .crumbs { font-size: 13px; color: var(--slate); padding: 18px 0 0; }
 .crumbs a { color: var(--slate); }
 
